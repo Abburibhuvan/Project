@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: tau-django-app
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn TAU.wsgi:application
+    envVars:
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: False
+      - key: DJANGO_ALLOWED_HOSTS
+        value: your-app-name.onrender.com
+      - key: DJANGO_CSRF_TRUSTED_ORIGINS
+        value: https://your-app-name.onrender.com
+      - key: DEFAULT_FROM_EMAIL
+        value: testmailsitp@gmail.com
+      - key: SITE_URL
+        value: https://your-app-name.onrender.com
+      - key: SECURE_SSL_REDIRECT
+        value: True
+      - key: SESSION_COOKIE_SECURE
+        value: True
+      - key: CSRF_COOKIE_SECURE
+        value: True 
