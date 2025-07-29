@@ -23,6 +23,8 @@ DJANGO_ALLOWED_HOSTS=your-app-name.railway.app
 DJANGO_CSRF_TRUSTED_ORIGINS=https://your-app-name.railway.app
 DEFAULT_FROM_EMAIL=testmailsitp@gmail.com
 SITE_URL=https://your-app-name.railway.app
+BREVO_API_KEY=your-brevo-api-key
+BREVO_SENDER_EMAIL=testmailsitp@gmail.com
 SECURE_SSL_REDIRECT=True
 SESSION_COOKIE_SECURE=True
 CSRF_COOKIE_SECURE=True
@@ -38,6 +40,39 @@ python manage.py collectstatic --noinput
 ### Step 5: Create Superuser
 ```bash
 python manage.py createsuperuser
+```
+
+## Docker Deployment
+
+### Local Docker Build
+```bash
+# Build the Docker image
+docker build -t tau-django-app .
+
+# Run the container
+docker run -p 8000:8000 -e DJANGO_SECRET_KEY=your-secret-key tau-django-app
+```
+
+### Docker Compose (for local development)
+Create a `docker-compose.yml` file:
+
+```yaml
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_SECRET_KEY=your-secret-key
+      - DJANGO_DEBUG=True
+      - DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
+      - BREVO_API_KEY=your-brevo-api-key
+      - BREVO_SENDER_EMAIL=testmailsitp@gmail.com
+    volumes:
+      - ./media:/app/media
+      - ./staticfiles:/app/staticfiles
 ```
 
 ## Alternative: Deploy to Render
@@ -59,6 +94,10 @@ services:
         value: False
       - key: DJANGO_ALLOWED_HOSTS
         value: your-app-name.onrender.com
+      - key: BREVO_API_KEY
+        sync: false
+      - key: BREVO_SENDER_EMAIL
+        value: testmailsitp@gmail.com
 ```
 
 ### Step 2: Deploy to Render
@@ -76,6 +115,8 @@ services:
 - `DJANGO_CSRF_TRUSTED_ORIGINS`: Your HTTPS domain(s)
 
 ### Email Configuration:
+- `BREVO_API_KEY`: Your Brevo API key
+- `BREVO_SENDER_EMAIL`: Your sender email
 - `DEFAULT_FROM_EMAIL`: Your sender email
 - `SITE_URL`: Your production URL
 
@@ -83,6 +124,26 @@ services:
 - `SECURE_SSL_REDIRECT`: True
 - `SESSION_COOKIE_SECURE`: True
 - `CSRF_COOKIE_SECURE`: True
+
+## Troubleshooting Docker Build Issues
+
+### Common Issues:
+1. **Python version mismatch**: Ensure `runtime.txt` specifies Python 3.12
+2. **Missing dependencies**: Check `requirements.txt` includes all packages
+3. **Permission issues**: Ensure proper file permissions
+4. **Memory issues**: Increase Docker memory allocation
+
+### Build Commands:
+```bash
+# Clean build
+docker build --no-cache -t tau-django-app .
+
+# Build with specific platform
+docker build --platform linux/amd64 -t tau-django-app .
+
+# Build with build args
+docker build --build-arg DJANGO_SECRET_KEY=your-key -t tau-django-app .
+```
 
 ## Post-Deployment Checklist
 
@@ -100,6 +161,7 @@ services:
 2. **Database errors**: Run migrations
 3. **Email not working**: Check Brevo API key and settings
 4. **CSRF errors**: Verify `CSRF_TRUSTED_ORIGINS` includes your domain
+5. **Docker build failures**: Check Python version and dependencies
 
 ### Logs:
 Check your deployment platform's logs for any errors.
